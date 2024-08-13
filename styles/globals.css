@@ -30,5 +30,5 @@ table.basic tr td {
   @apply border border-blue-200 p-1;
 }
 table.basic a {
-  @apply rounded-md bg-blue-900 text-white text-sm py-1 px-2 inline-flex gap-1;
+  @apply rounded-md bg-blue-900 text-white text-sm py-1 px-2 inline-flex gap-1 mr-2;
 }
