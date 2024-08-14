@@ -9,6 +9,7 @@ export default function ProductForm({
   title: existingTitle,
   description: existingDescription,
   price: existingPrice,
+  images,
 }) {
   const [title, setTitle] = useState(existingTitle || "");
   const [description, setDescription] = useState(existingDescription || "");
@@ -33,6 +34,26 @@ export default function ProductForm({
   if (goToProduct) {
     router.push("/products");
   }
+
+  async function upLoadImages(ev) {
+    try {
+      const files = ev.target?.files;
+      if (!files?.length > 0) {
+        return;
+      }
+      const data = new FormData();
+      for (const file of files) {
+        files.forEach((file) => {
+          data.append("file", file);
+        });
+        const res = await axios.post("/api/upload", data);
+        console.log(res.data);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   return (
     <form onSubmit={saveProduct}>
       <label>Product name</label>
@@ -42,6 +63,28 @@ export default function ProductForm({
         value={title}
         onChange={(ev) => setTitle(ev.target.value)}
       ></input>
+      <label>Photos</label>
+      <div className="mb-2">
+        <label className="bg-gray-200 cursor-pointer w-32 h-32 text-center justify-center flex items-center text-sm text-gray-500 gap-1 rounded-lg">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="size-6"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
+            />
+          </svg>
+          <div>Upload</div>
+          <input type="file" onChange={upLoadImages} className="hidden"></input>
+        </label>
+        {!images?.length && <div>No photos in this product </div>}
+      </div>
       <label>Description</label>
       <textarea
         placeholder="description"
