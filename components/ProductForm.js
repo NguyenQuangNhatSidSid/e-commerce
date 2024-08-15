@@ -42,10 +42,12 @@ export default function ProductForm({
         return;
       }
       const data = new FormData();
+
       for (const file of files) {
-        files.forEach((file) => {
+        for (const file of files) {
           data.append("file", file);
-        });
+        }
+
         const res = await axios.post("/api/upload", data);
         console.log(res.data);
       }
