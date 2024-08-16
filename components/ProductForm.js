@@ -1,5 +1,3 @@
-import Layout from "@/components/Layout";
-import { data } from "autoprefixer";
 import axios from "axios";
 import { Router, useRouter } from "next/router";
 import { useState } from "react";
@@ -9,17 +7,19 @@ export default function ProductForm({
   title: existingTitle,
   description: existingDescription,
   price: existingPrice,
-  images,
+  images: existingImages,
 }) {
   const [title, setTitle] = useState(existingTitle || "");
   const [description, setDescription] = useState(existingDescription || "");
   const [price, setPrice] = useState(existingPrice || "");
+  const [images, setImages] = useState(existingImages || []);
   const [goToProduct, setGoToProduct] = useState(false);
   const router = useRouter();
 
   async function saveProduct(ev) {
     ev.preventDefault();
-    const data = { title, description, price };
+    const data = { title, description, price, images };
+
     try {
       if (_id) {
         await axios.put("/api/products", { ...data, _id });
@@ -38,19 +38,21 @@ export default function ProductForm({
   async function upLoadImages(ev) {
     try {
       const files = ev.target?.files;
+
       if (!files?.length > 0) {
         return;
       }
       const data = new FormData();
 
       for (const file of files) {
-        for (const file of files) {
-          data.append("file", file);
-        }
-
-        const res = await axios.post("/api/upload", data);
-        console.log(res.data);
+        data.append("file", file);
       }
+
+      const res = await axios.post("/api/upload", data);
+
+      setImages([...images, res.data.url]);
+
+      console.log(res.data);
     } catch (error) {
       console.log(error);
     }
