@@ -1,31 +1,44 @@
-import cloudinary from "@/lib/cloudinary";
+import { storage } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import multiparty from "multiparty";
+import fs from "fs/promises";
+import path from "path";
+import mime from "mime-types";
 
 export default async function handle(req, res) {
   const form = new multiparty.Form();
 
-  form.parse(req, async (err, fields, files) => {
-    if (err) {
-      return res.status(500).send(err);
-    }
-    const file = files.file[0];
-    const path = file.path;
-    try {
-      const result = await cloudinary.uploader.upload(path, {
-        folder:
-          "https://console.cloudinary.com/console/c-32ce8bdf5a797d8b54a4512e021775/media_library/folders/c8ad35c7400944804c74cc94fd184219f8",
-      });
-      // Delete the temporary file
-      await fs.unlink(path);
-
-      // Send back the URL of the uploaded image
-      res.status(200).json({ url: result.secure_url });
-    } catch (error) {
-      res.status(500).json({ message: "Image upload failed", error });
-    }
-    // console.log("length: ", files.file.length);
-    // res.json("ok");
+  const { fields, files } = await new Promise((resolve, reject) => {
+    form.parse(req, (err, fields, files) => {
+      if (err) reject(err);
+      resolve({ fields, files });
+    });
   });
+
+  const urls = [];
+
+  for (const file of files.file) {
+    const filePath = file.path;
+    const ext = path.extname(file.originalFilename);
+    const newFilename = `${Date.now()}${ext}`;
+    const fileBuffer = await fs.readFile(filePath);
+
+    const fileRef = ref(storage, `images/${newFilename}`);
+    const metadata = {
+      contentType: mime.lookup(filePath),
+    };
+
+    try {
+      await uploadBytes(fileRef, fileBuffer, metadata);
+      const downloadURL = await getDownloadURL(fileRef);
+      urls.push(downloadURL);
+      await fs.unlink(filePath); // Clean up the temp file
+    } catch (error) {
+      return res.status(500).json({ message: "Upload failed", error });
+    }
+  }
+
+  res.status(200).json({ links: urls });
 }
 
 export const config = {

@@ -50,7 +50,9 @@ export default function ProductForm({
 
       const res = await axios.post("/api/upload", data);
 
-      setImages([...images, res.data.url]);
+      setImages((oldImages) => {
+        return [...oldImages, ...res.data.links];
+      });
 
       console.log(res.data);
     } catch (error) {
@@ -68,7 +70,13 @@ export default function ProductForm({
         onChange={(ev) => setTitle(ev.target.value)}
       ></input>
       <label>Photos</label>
-      <div className="mb-2">
+      <div className="mb-2 flex flex-wrap gap-2">
+        {!!images?.length &&
+          images.map((link) => (
+            <div key={link}>
+              <img className="h-24 rounded-lg" src={link} alt="Product image" />
+            </div>
+          ))}
         <label className="bg-gray-200 cursor-pointer w-32 h-32 text-center justify-center flex items-center text-sm text-gray-500 gap-1 rounded-lg">
           <svg
             xmlns="http://www.w3.org/2000/svg"

@@ -13,11 +13,12 @@ export default async function handler(req, res, next) {
     }
   } else if (method === "POST") {
     try {
-      const { title, description, price } = req.body;
+      const { title, description, price, images } = req.body;
       const productDoc = await Product.create({
         title,
         description,
         price,
+        images,
       });
       res.status(201).json(productDoc);
     } catch (error) {
@@ -26,10 +27,10 @@ export default async function handler(req, res, next) {
     }
   } else if (method === "PUT") {
     try {
-      const { title, description, price, _id } = req.body;
+      const { title, description, price, _id, images } = req.body;
       const updatedProduct = await Product.findByIdAndUpdate(
         _id,
-        { title, description, price },
+        { title, description, price, images },
         { new: true }
       );
       if (!updatedProduct) {
