@@ -1,6 +1,7 @@
 import axios from "axios";
-import { Router, useRouter } from "next/router";
+import { useRouter } from "next/router";
 import { useState } from "react";
+import Spinner from "./Spinner";
 
 export default function ProductForm({
   _id,
@@ -14,6 +15,7 @@ export default function ProductForm({
   const [price, setPrice] = useState(existingPrice || "");
   const [images, setImages] = useState(existingImages || []);
   const [goToProduct, setGoToProduct] = useState(false);
+  const [isUploadinng, setIsUploading] = useState(false);
   const router = useRouter();
 
   async function saveProduct(ev) {
@@ -28,9 +30,10 @@ export default function ProductForm({
       }
       setGoToProduct(true);
     } catch (error) {
-      console.log(error.message);
+      console.log("Error saving product:", error.message);
     }
   }
+
   if (goToProduct) {
     router.push("/products");
   }
@@ -39,9 +42,10 @@ export default function ProductForm({
     try {
       const files = ev.target?.files;
 
-      if (!files?.length > 0) {
+      if (!files?.length) {
         return;
       }
+      setIsUploading(true);
       const data = new FormData();
 
       for (const file of files) {
@@ -49,14 +53,10 @@ export default function ProductForm({
       }
 
       const res = await axios.post("/api/upload", data);
-
-      setImages((oldImages) => {
-        return [...oldImages, ...res.data.links];
-      });
-
-      console.log(res.data);
+      setImages((oldImages) => [...oldImages, ...res.data.links]);
+      setIsUploading(false);
     } catch (error) {
-      console.log(error);
+      console.log("Error uploading images:", error.message);
     }
   }
 
@@ -68,7 +68,7 @@ export default function ProductForm({
         placeholder="product name"
         value={title}
         onChange={(ev) => setTitle(ev.target.value)}
-      ></input>
+      />
       <label>Photos</label>
       <div className="mb-2 flex flex-wrap gap-2">
         {!!images?.length &&
@@ -77,7 +77,13 @@ export default function ProductForm({
               <img className="h-24 rounded-lg" src={link} alt="Product image" />
             </div>
           ))}
-        <label className="bg-gray-200 cursor-pointer w-32 h-32 text-center justify-center flex items-center text-sm text-gray-500 gap-1 rounded-lg">
+        {isUploadinng && (
+          <div className="h-24 p-1 bg-gray-200 flex items-center">
+            <Spinner />
+          </div>
+        )}
+
+        <label className="bg-gray-200 cursor-pointer w-24 h-24 text-center justify-center flex items-center text-sm text-gray-500 gap-1 rounded-lg">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -93,23 +99,22 @@ export default function ProductForm({
             />
           </svg>
           <div>Upload</div>
-          <input type="file" onChange={upLoadImages} className="hidden"></input>
+          <input type="file" onChange={upLoadImages} className="hidden" />
         </label>
-        {!images?.length && <div>No photos in this product </div>}
       </div>
       <label>Description</label>
       <textarea
         placeholder="description"
         value={description}
         onChange={(ev) => setDescription(ev.target.value)}
-      ></textarea>
+      />
       <label>Price(in USD)</label>
       <input
         type="text"
         placeholder="price"
         value={price}
         onChange={(ev) => setPrice(ev.target.value)}
-      ></input>
+      />
       <button className="btn-primary" type="submit">
         Save
       </button>

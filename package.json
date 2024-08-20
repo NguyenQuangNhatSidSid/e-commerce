@@ -21,6 +21,7 @@
     "next-auth": "^4.24.7",
     "react": "^18",
     "react-dom": "^18",
+    "react-spinners": "^0.14.1",
     "selling": "file:"
   },
   "devDependencies": {

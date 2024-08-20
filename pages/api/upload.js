@@ -8,39 +8,40 @@ import mime from "mime-types";
 export default async function handle(req, res) {
   const form = new multiparty.Form();
 
-  const { fields, files } = await new Promise((resolve, reject) => {
-    form.parse(req, (err, fields, files) => {
-      if (err) reject(err);
-      resolve({ fields, files });
+  try {
+    const { fields, files } = await new Promise((resolve, reject) => {
+      form.parse(req, (err, fields, files) => {
+        if (err) {
+          console.error("Form parsing error:", err);
+          return reject(err);
+        }
+        resolve({ fields, files });
+      });
     });
-  });
 
-  const urls = [];
+    const urls = await Promise.all(
+      files.file.map(async (file) => {
+        const ext = path.extname(file.originalFilename);
+        const newFilename = `${Date.now()}${ext}`;
+        const fileBuffer = await fs.readFile(file.path);
+        const fileRef = ref(storage, `images/${newFilename}`);
+        const metadata = { contentType: mime.lookup(file.path) };
 
-  for (const file of files.file) {
-    const filePath = file.path;
-    const ext = path.extname(file.originalFilename);
-    const newFilename = `${Date.now()}${ext}`;
-    const fileBuffer = await fs.readFile(filePath);
+        await uploadBytes(fileRef, fileBuffer, metadata);
+        await fs.unlink(file.path); // Clean up the temp file
 
-    const fileRef = ref(storage, `images/${newFilename}`);
-    const metadata = {
-      contentType: mime.lookup(filePath),
-    };
+        return getDownloadURL(fileRef);
+      })
+    );
 
-    try {
-      await uploadBytes(fileRef, fileBuffer, metadata);
-      const downloadURL = await getDownloadURL(fileRef);
-      urls.push(downloadURL);
-      await fs.unlink(filePath); // Clean up the temp file
-    } catch (error) {
-      return res.status(500).json({ message: "Upload failed", error });
-    }
+    res.status(200).json({ links: urls });
+  } catch (error) {
+    console.error("Error uploading files:", error);
+    res.status(500).json({ message: "Upload failed", error });
   }
-
-  res.status(200).json({ links: urls });
 }
 
+// Important: Disable body parsing for this route
 export const config = {
-  api: { bodyParse: false },
+  api: { bodyParser: false },
 };

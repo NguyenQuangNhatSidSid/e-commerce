@@ -1,18 +1,20 @@
 import mongooseConnect from "@/lib/mongoose";
 import { Product } from "@/models/Product";
 
-export default async function handler(req, res, next) {
+export default async function handler(req, res) {
   const { method } = req;
   await mongooseConnect();
 
-  if (method === "GET") {
-    if (req.query?.id) {
-      res.json(await Product.findOne({ _id: req.query.id }));
-    } else {
-      res.status(200).json(await Product.find());
-    }
-  } else if (method === "POST") {
-    try {
+  try {
+    if (method === "GET") {
+      if (req.query?.id) {
+        const product = await Product.findOne({ _id: req.query.id });
+        res.json(product);
+      } else {
+        const products = await Product.find();
+        res.status(200).json(products);
+      }
+    } else if (method === "POST") {
       const { title, description, price, images } = req.body;
       const productDoc = await Product.create({
         title,
@@ -21,12 +23,7 @@ export default async function handler(req, res, next) {
         images,
       });
       res.status(201).json(productDoc);
-    } catch (error) {
-      console.error("Error creating product:", error);
-      res.status(500).json({ message: "Internal Server Error" });
-    }
-  } else if (method === "PUT") {
-    try {
+    } else if (method === "PUT") {
       const { title, description, price, _id, images } = req.body;
       const updatedProduct = await Product.findByIdAndUpdate(
         _id,
@@ -34,26 +31,23 @@ export default async function handler(req, res, next) {
         { new: true }
       );
       if (!updatedProduct) {
-        res.status(404).json({ message: " Product not found" });
+        res.status(404).json({ message: "Product not found" });
       } else {
         res.status(200).json(updatedProduct);
       }
-    } catch (error) {
-      console.error("Error updating product:", error);
-      res.status(500).json({ message: "Internal Server Error" });
-    }
-  } else if (method === "DELETE") {
-    try {
+    } else if (method === "DELETE") {
       if (req.query?.id) {
-        await Product.findByIdAndDelete({ _id: req.query?.id });
-        res.status(200).json("delete successfull");
+        await Product.findByIdAndDelete(req.query.id);
+        res.status(200).json("Delete successful");
+      } else {
+        res.status(400).json({ message: "Missing product ID" });
       }
-    } catch (error) {
-      console.error("Error updating product:", error);
-      res.status(500).json({ message: "Internal Server Error" });
+    } else {
+      res.setHeader("Allow", ["GET", "POST", "PUT", "DELETE"]);
+      res.status(405).end(`Method ${method} Not Allowed`);
     }
-  } else {
-    res.setHeader("Allow", ["POST"]);
-    res.status(405).end(`Method ${method} Not Allowed`);
+  } catch (error) {
+    console.error("Error processing request:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 }
