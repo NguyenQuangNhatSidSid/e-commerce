@@ -6,22 +6,25 @@ export default async function handle(req, res) {
   await mongooseConnect();
   try {
     if (method === "POST") {
-      const { name, parentCategory } = req.body;
+      const { name, parentCategory, properties } = req.body;
       const categoryDoc = await Category.create({
         name,
         parent: parentCategory,
+        properties,
       });
+
       res.status(201).json(categoryDoc);
     } else if (method === "GET") {
       const categoryDoc = await Category.find().populate("parent");
       res.status(201).json(categoryDoc);
     } else if (method === "PUT") {
-      const { name, parentCategory, _id } = req.body;
+      const { name, parentCategory, _id, properties } = req.body;
       const categoryDoc = await Category.findOneAndUpdate(
         { _id },
         {
           name,
           parent: parentCategory,
+          properties,
         }
       );
       res.status(201).json(categoryDoc);
