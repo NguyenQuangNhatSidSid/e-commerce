@@ -1,8 +1,8 @@
-import NextAuth from 'next-auth'
-import GoogleProvider from 'next-auth/providers/google'
-import { MongoDBAdapter } from "@auth/mongodb-adapter"
-import client from "@/lib/db"
-
+import NextAuth from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+import { MongoDBAdapter } from "@auth/mongodb-adapter";
+import client from "@/lib/db";
+const adminEmail = ["bin.nhok.94695@gmail.com"];
 export default NextAuth({
   providers: [
     // OAuth authentication providers...
@@ -16,7 +16,7 @@ export default NextAuth({
     // }),
     GoogleProvider({
       clientId: process.env.GOOGLE_ID,
-      clientSecret: process.env.GOOGLE_SECRET
+      clientSecret: process.env.GOOGLE_SECRET,
     }),
     // Passwordless / email sign in
     // EmailProvider({
@@ -24,5 +24,15 @@ export default NextAuth({
     //   from: 'NextAuth.js <no-reply@example.com>'
     // }),
   ],
-  adapter: MongoDBAdapter(client)
-})
+  adapter: MongoDBAdapter(client),
+  callbacks: {
+    session: ({ session, account, profile }) => {
+      console.log({ session, account, profile });
+      if (adminEmail.includes(session?.user?.email)) {
+        return session;
+      } else {
+        return false;
+      }
+    },
+  },
+});
