@@ -4,10 +4,14 @@ import multiparty from "multiparty";
 import fs from "fs/promises";
 import path from "path";
 import mime from "mime-types";
+import { isAdminRequest } from "./auth/[...nextauth]";
+import mongooseConnect from "@/lib/mongoose";
 
 export default async function handle(req, res) {
-  const form = new multiparty.Form();
+  await mongooseConnect();
+  await isAdminRequest(req, res);
 
+  const form = new multiparty.Form();
   try {
     const { fields, files } = await new Promise((resolve, reject) => {
       form.parse(req, (err, fields, files) => {
