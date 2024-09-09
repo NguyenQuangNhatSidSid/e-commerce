@@ -131,19 +131,21 @@ export default function ProductForm({
       </select>
       {categories.length > 0 &&
         propertiesToFill.map((p) => (
-          <div className="flex gap-1" key={p._id}>
-            <div>{p.name}</div>
-            <select
-              key={p._id}
-              value={productProperties[p.name]}
-              onChange={(ev) => setProductProp(p.name, ev.target.value)}
-            >
-              {p.values.map((v) => (
-                <option key={v._id} value={v}>
-                  {v}
-                </option>
-              ))}
-            </select>
+          <div className="" key={p._id}>
+            <label>{p.name[0].toUpperCase() + p.name.substring(1)}</label>
+            <div>
+              <select
+                key={p._id}
+                value={productProperties[p.name]}
+                onChange={(ev) => setProductProp(p.name, ev.target.value)}
+              >
+                {p.values.map((v) => (
+                  <option key={v._id} value={v}>
+                    {v}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         ))}
       <label>Photos</label>
@@ -157,7 +159,7 @@ export default function ProductForm({
             images.map((link) => (
               <div key={link}>
                 <img
-                  className="h-24 rounded-lg"
+                  className="h-24 rounded-lg bg-white p-4 shadow-md border border-gray-100"
                   src={link}
                   alt="Product image"
                 />
@@ -170,7 +172,7 @@ export default function ProductForm({
           </div>
         )}
 
-        <label className="bg-gray-200 cursor-pointer w-24 h-24 text-center justify-center flex items-center text-sm text-gray-500 gap-1 rounded-lg">
+        <label className="bg-white flex-col shadow-md border-gray-100 cursor-pointer w-24 h-24 text-center justify-center flex items-center text-sm text-gray-500 gap-1 rounded-lg">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -185,7 +187,7 @@ export default function ProductForm({
               d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
             />
           </svg>
-          <div>Upload</div>
+          <div>Add image</div>
           <input type="file" onChange={upLoadImages} className="hidden" />
         </label>
       </div>
