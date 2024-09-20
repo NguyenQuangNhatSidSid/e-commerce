@@ -3,6 +3,9 @@ import { useSession } from "next-auth/react";
 
 export default function Home() {
   const { data: session } = useSession();
+  if ("") {
+    console.log("hello world");
+  }
 
   return (
     <Layout>
