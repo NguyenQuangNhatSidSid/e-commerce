@@ -24,7 +24,11 @@ export default function OrdersPage() {
           {orders.length > 0 &&
             orders.map((order) => (
               <tr key={order.length}>
-                <td>{order.createAt}</td>
+                <td>
+                  {typeof order.createAt === "number" && !isNaN(timestamp)
+                    ? new Date(order.createAt).toLocaleString()
+                    : "Invalid timestamp"}
+                </td>
                 <td>
                   {order.name} {order.email} <br />
                   {order.city} {order.postalCode} {order.country} <br />
@@ -33,8 +37,7 @@ export default function OrdersPage() {
                 <td>
                   {order.line_items.map((l) => (
                     <>
-                      {l.price_data?.name} x {l.quantity}
-                      {JSON.stringify(l)}
+                      {l.price_data?.product_data.name} x {l.quantity} <br />
                       <br />
                     </>
                   ))}
