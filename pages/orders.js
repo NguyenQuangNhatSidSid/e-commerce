@@ -16,6 +16,7 @@ export default function OrdersPage() {
         <thead>
           <tr>
             <th>Date</th>
+            <th>Paid</th>
             <th>Recipient</th>
             <th>Recipient</th>
           </tr>
@@ -24,10 +25,9 @@ export default function OrdersPage() {
           {orders.length > 0 &&
             orders.map((order) => (
               <tr key={order.length}>
-                <td>
-                  {typeof order.createAt === "number" && !isNaN(timestamp)
-                    ? new Date(order.createAt).toLocaleString()
-                    : "Invalid timestamp"}
+                <td>{new Date(order.createdAt).toLocaleString()}</td>
+                <td className={order.paid ? "text-green-600" : "text-red-300"}>
+                  {order.paid ? "YES" : "NO"}
                 </td>
                 <td>
                   {order.name} {order.email} <br />
